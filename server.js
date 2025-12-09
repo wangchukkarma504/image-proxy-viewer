@@ -28,6 +28,8 @@ app.get("/", async (req, res) => {
       response.headers.get("content-type") || "image/jpeg";
 
     res.setHeader("Content-Type", contentType);
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "public, max-age=86400");
     res.send(buffer);
 
   } catch (err) {
