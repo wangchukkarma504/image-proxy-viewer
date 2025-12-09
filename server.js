@@ -24,14 +24,11 @@ app.get("/", async (req, res) => {
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
-    const base64 = buffer.toString("base64");
     const contentType =
       response.headers.get("content-type") || "image/jpeg";
 
-    const dataUrl = `data:${contentType};base64,${base64}`;
-
-    res.setHeader("Content-Type", "text/plain");
-    res.send(dataUrl);
+    res.setHeader("Content-Type", contentType);
+    res.send(buffer);
 
   } catch (err) {
     res.status(500).send(`Failed to fetch image: ${err.message}`);
