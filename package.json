@@ -1,0 +1,16 @@
+{
+  "name": "image-proxy-viewer",
+  "version": "1.0.0",
+  "description": "Simple Node.js image proxy viewer to bypass CORS by fetching images server-side.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
