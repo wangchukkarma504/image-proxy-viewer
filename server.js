@@ -32,18 +32,23 @@ app.get("/", async (req, res) => {
     // Detect mobile User-Agent
     const userAgent = req.headers["user-agent"] || "";
     const isMobile = /Mobile|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(userAgent);
+    console.log("User-Agent:", userAgent, "isMobile:", isMobile);
 
-    // If mobile, resize/compress image before sending
     if (isMobile) {
-      // Get image buffer
-      const buffer = Buffer.from(await response.arrayBuffer());
-      // Resize to max width 600px, compress to JPEG quality 70
-      const processed = await sharp(buffer)
-        .resize({ width: 600, withoutEnlargement: true })
-        .jpeg({ quality: 70 })
-        .toBuffer();
-      res.setHeader("Content-Type", "image/jpeg");
-      res.send(processed);
+      try {
+        // Get image buffer
+        const buffer = Buffer.from(await response.arrayBuffer());
+        // Always convert to JPEG for iOS compatibility
+        const processed = await sharp(buffer)
+          .resize({ width: 600, withoutEnlargement: true })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+        res.setHeader("Content-Type", "image/jpeg");
+        res.send(processed);
+      } catch (err) {
+        console.error("Sharp processing error:", err);
+        res.status(500).send("Image processing failed");
+      }
     } else {
       // Stream for desktop/other clients
       if (response.body && typeof response.body.pipe === 'function') {
