@@ -1,0 +1,23 @@
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# Build output
+build/
+dist/
+
+# dotenv environment variables file
+.env
+
+# VS Code settings
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Linux
+*~
+
+# Ignore package-lock.json
+package-lock.json
