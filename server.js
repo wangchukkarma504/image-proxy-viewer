@@ -23,14 +23,25 @@ app.get("/", async (req, res) => {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
 
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const contentType =
-      response.headers.get("content-type") || "image/jpeg";
 
+    const contentType = response.headers.get("content-type") || "image/jpeg";
     res.setHeader("Content-Type", contentType);
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "public, max-age=86400");
-    res.send(buffer);
+
+    if (response.body && typeof response.body.pipe === 'function') {
+      // Node.js native Response (undici/fetch)
+      response.body.pipe(res);
+    } else if (response.body) {
+      // Web Streams API (node-fetch, fetch API)
+      const stream = require('stream');
+      const { Readable } = stream;
+      Readable.fromWeb(response.body).pipe(res);
+    } else {
+      // Fallback: buffer
+      const buffer = Buffer.from(await response.arrayBuffer());
+      res.send(buffer);
+    }
 
   } catch (err) {
     res.status(500).send(`Failed to fetch image: ${err.message}`);
