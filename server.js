@@ -37,5 +37,36 @@ app.get("/", async (req, res) => {
   }
 });
 
+app.get("/html", async (req, res) => {
+  try {
+    const url = req.query.url;
+    if (!url) {
+      return res.status(400).send("url parameter is required");
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
+    }
+
+    const html = await response.text();
+    
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.send(html);
+
+  } catch (err) {
+    res.status(500).send(`Failed to fetch URL: ${err.message}`);
+  }
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("Server running on", port));
