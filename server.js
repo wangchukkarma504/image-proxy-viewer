@@ -29,38 +29,22 @@ app.get("/", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "public, max-age=86400");
 
-    // Detect mobile User-Agent
-    const userAgent = req.headers["user-agent"] || "";
-    const isMobile = /Mobile|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(userAgent);
-    console.log("User-Agent:", userAgent, "isMobile:", isMobile);
+    // ...existing code...
 
-    if (isMobile) {
-      try {
-        // Get image buffer
-        const buffer = Buffer.from(await response.arrayBuffer());
-        // Always convert to JPEG for iOS compatibility
-        const processed = await sharp(buffer)
-          .resize({ width: 600, withoutEnlargement: true })
-          .jpeg({ quality: 80 })
-          .toBuffer();
-        res.setHeader("Content-Type", "image/jpeg");
-        res.send(processed);
-      } catch (err) {
-        console.error("Sharp processing error:", err);
-        res.status(500).send("Image processing failed");
-      }
+    // Stream for all clients (mobile and desktop)
+    if (response.body && typeof response.body.pipe === 'function') {
+      res.setHeader("Content-Type", contentType);
+      response.body.pipe(res);
+    } else if (response.body) {
+      res.setHeader("Content-Type", contentType);
+      const stream = require('stream');
+      const { Readable } = stream;
+      Readable.fromWeb(response.body).pipe(res);
     } else {
-      // Stream for desktop/other clients
-      if (response.body && typeof response.body.pipe === 'function') {
-        response.body.pipe(res);
-      } else if (response.body) {
-        const stream = require('stream');
-        const { Readable } = stream;
-        Readable.fromWeb(response.body).pipe(res);
-      } else {
-        const buffer = Buffer.from(await response.arrayBuffer());
-        res.send(buffer);
-      }
+      // Fallback: buffer
+      const buffer = Buffer.from(await response.arrayBuffer());
+      res.setHeader("Content-Type", contentType);
+      res.send(buffer);
     }
   } catch (err) {
     res.status(500).send(`Failed to fetch image: ${err.message}`);
