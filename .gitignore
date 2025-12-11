@@ -18,6 +18,3 @@ dist/
 
 # Linux
 *~
-
-# Ignore package-lock.json
-package-lock.json
