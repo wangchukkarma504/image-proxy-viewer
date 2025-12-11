@@ -32,19 +32,24 @@ app.get("/", async (req, res) => {
     // ...existing code...
 
     // Stream for all clients (mobile and desktop)
-    if (response.body && typeof response.body.pipe === 'function') {
-      res.setHeader("Content-Type", contentType);
-      response.body.pipe(res);
-    } else if (response.body) {
-      res.setHeader("Content-Type", contentType);
-      const stream = require('stream');
-      const { Readable } = stream;
-      Readable.fromWeb(response.body).pipe(res);
-    } else {
-      // Fallback: buffer
-      const buffer = Buffer.from(await response.arrayBuffer());
-      res.setHeader("Content-Type", contentType);
-      res.send(buffer);
+    try {
+      if (response.body && typeof response.body.pipe === 'function') {
+        res.setHeader("Content-Type", contentType);
+        response.body.pipe(res);
+      } else if (response.body) {
+        res.setHeader("Content-Type", contentType);
+        const stream = require('stream');
+        const { Readable } = stream;
+        Readable.fromWeb(response.body).pipe(res);
+      } else {
+        // Fallback: buffer
+        const buffer = Buffer.from(await response.arrayBuffer());
+        res.setHeader("Content-Type", contentType);
+        res.send(buffer);
+      }
+    } catch (err) {
+      console.error("Image streaming error:", err);
+      res.status(500).send("Failed to stream image: " + err.message);
     }
   } catch (err) {
     res.status(500).send(`Failed to fetch image: ${err.message}`);
