@@ -1,5 +1,4 @@
 import express from "express";
-import sharp from "sharp";
 
 const app = express();
 
@@ -38,8 +37,8 @@ app.get("/", async (req, res) => {
         response.body.pipe(res);
       } else if (response.body) {
         res.setHeader("Content-Type", contentType);
-        const stream = require('stream');
-        const { Readable } = stream;
+        const streamModule = await import('stream');
+        const { Readable } = streamModule;
         Readable.fromWeb(response.body).pipe(res);
       } else {
         // Fallback: buffer
