@@ -1,6 +1,102 @@
+import fetch from "node-fetch";
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
+
+// Improved CORS middleware
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://fir-url-85c0f.web.app',
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
+app.use(express.json());
+
+// Preflight for /ai
+app.options("/ai", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+  res.status(204).end();
+});
+
+// AI route MUST be POST
+app.post("/ai", async (req, res) => {
+  try {
+    const prompt = req.body.prompt;
+    let clientKey = req.headers["x-api-key"] || req.body.api_key;
+
+    const serverKey = process.env.AI_ROUTE_KEY;
+    if (!serverKey || clientKey !== serverKey) {
+      return res.status(403).send("Forbidden: Invalid or missing API key");
+    }
+
+    if (!prompt) {
+      return res.status(400).send("prompt parameter is required in JSON body");
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).send("Gemini API key not set in environment");
+    }
+
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      }
+    );
+
+    if (!geminiResponse.ok) {
+      throw new Error(`Gemini API error: ${geminiResponse.status} ${geminiResponse.statusText}`);
+    }
+
+    const data = await geminiResponse.json();
+
+    let output = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    const origin = req.headers.origin;
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.send(output);
+
+  } catch (err) {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.status(500).send("AI Error: " + err.message);
+  }
+});
 
 app.get("/", async (req, res) => {
   try {
