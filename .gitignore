@@ -6,9 +6,6 @@ npm-debug.log
 build/
 dist/
 
-# dotenv environment variables file
-.env
-
 # VS Code settings
 .vscode/
 
@@ -17,6 +14,3 @@ dist/
 
 # Linux
 *~
-
-# Ignore environment variable files
-.env
