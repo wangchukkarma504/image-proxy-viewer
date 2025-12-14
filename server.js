@@ -42,10 +42,9 @@ app.post('/ai', async (req, res) => {
     let clientKey = req.headers['x-api-key'] || req.body.api_key;
 
     const serverKey = process.env.AI_ROUTE_KEY;
-    if (!serverKey || clientKey !== serverKey) {
-      return res
-        .status(403)
-        .send('Forbidden: Invalid or missing API key' + serverKey);
+    console.log(serverKey);
+    if (clientKey !== serverKey) {
+      return res.status(403).send('Forbidden: Invalid or missing API key');
     }
 
     if (!prompt) {
