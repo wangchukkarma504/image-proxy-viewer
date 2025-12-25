@@ -5,10 +5,18 @@ dotenv.config();
 
 const app = express();
 
+// Serve background.ogg
+app.get("/background.ogg", (req, res) => {
+  res.setHeader("Content-Type", "audio/ogg");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.sendFile("background.ogg", { root: process.cwd() });
+});
+
 // Improved CORS middleware
 app.use((req, res, next) => {
   const allowedOrigins = [
     'https://fir-url-85c0f.web.app',
+    'https://service-3d-horse-racing-918101630961.us-west1.run.app'
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
