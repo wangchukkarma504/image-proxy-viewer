@@ -6,22 +6,19 @@ dotenv.config();
 const app = express();
 
 // Serve background.ogg
-app.get("/background.ogg", (req, res) => {
-  res.setHeader("Content-Type", "audio/ogg");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.sendFile("background.ogg", { root: process.cwd() });
+app.get('/background.ogg', (req, res) => {
+  res.setHeader('Content-Type', 'audio/ogg');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.sendFile('background.ogg', { root: process.cwd() });
 });
 
 // Improved CORS middleware
 app.use((req, res, next) => {
-<<<<<<< HEAD
   const allowedOrigins = [
     'https://fir-url-85c0f.web.app',
-    'https://service-3d-horse-racing-918101630961.us-west1.run.app'
+    'https://service-3d-horse-racing-918101630961.us-west1.run.app',
   ];
-=======
   const allowedOrigins = ['https://fir-url-85c0f.web.app'];
->>>>>>> ece18eb34e8a0bc604af767e1ada1dba46dc1532
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
